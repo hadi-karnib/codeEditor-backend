@@ -32,7 +32,19 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class);
+    }
 
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class);
+    }
+    public function codeSubmissions() // Renamed for clarity
+    {
+        return $this->hasMany(CodeSubmission::class);
+    }
     /**
      * The attributes that should be cast.
      *

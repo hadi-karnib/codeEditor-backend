@@ -14,4 +14,20 @@ class UserController extends Controller
 
         return response()->json($users);
     }
+    public function deleteUser(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+        ]);
+
+        $id = $request->input('id');
+        $user = User::find($id);
+
+        if ($user) {
+            $user->delete();
+            return response()->json(['message' => 'User deleted successfully']);
+        }
+
+        return response()->json(['message' => 'User not found'], 404);
+    }
 }

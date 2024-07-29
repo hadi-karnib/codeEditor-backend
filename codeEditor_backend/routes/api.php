@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\auth\AuthUserController;
+use App\Http\Controllers\code\CodeFilesController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\user\UserController;
 use Illuminate\Http\Request;
@@ -17,15 +18,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('guest')->group(function () {
-    Route::post('login', [AuthUserController::class, 'login'])->name('login');
-    Route::post('create', [AuthUserController::class, 'register']);
-});
+Route::post('login', [AuthUserController::class, 'login'])->name('login');
+Route::post('create', [AuthUserController::class, 'register']);
 Route::middleware('auth:api')->group(function () {
-    Route::get('users', [UserController::class, 'getAllUsers']);
     Route::middleware('admin')->group(function () {
-        Route::get('test', function () {
-            return "hello world";
-        });
+        Route::delete('user/delete', [UserController::class, 'deleteUser']);
+    });
+    Route::middleware('user')->group(function () {
+        Route::get('users', [UserController::class, 'getAllUsers']);
+        Route::get('userCodes', [CodeFilesController::class, 'getUserCodes']);
+        Route::patch('updateCode', [CodeFilesController::class, 'updateCode']);
     });
 });

@@ -10,27 +10,33 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthUserController extends Controller
 {
-
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-        $credentials = $request->only('email', 'password');
 
-        $token = Auth::attempt($credentials);
-        if (!$token) {
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unauthorized',
+                'message' => 'Invalid email.',
             ], 401);
         }
 
-        $user = Auth::user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid password.',
+            ], 401);
+        }
+
+        $token = Auth::login($user);
+
         return response()->json([
             'status' => 'success',
-            'user' => $user,
             'authorization' => [
                 'token' => $token,
                 'type' => 'bearer',
@@ -40,27 +46,40 @@ class AuthUserController extends Controller
 
     public function register(Request $request)
     {
-        $data = $request->validate([
-            'username' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+        try {
+            $data = $request->validate([
+                'username' => 'required|string|max:255|unique:users',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6',
+            ]);
 
-        $user =  new User();
-        $user->username = $data['username'];
-        $user->email = $data['email'];
-        $user->password = Hash::make($data['password']);
-        $user->role = "user";
-        $user->save();
-        $token = Auth::login($user);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User created successfully',
-            'user' => $user,
-            'authorization' => [
-                'token' => $token,
-                'type' => 'bearer',
-            ]
-        ]);
+            $user = new User();
+            $user->username = $data['username'];
+            $user->email = $data['email'];
+            $user->password = Hash::make($data['password']);
+            $user->role = "user";
+            $user->save();
+
+            $token = Auth::login($user);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User created successfully',
+                'authorization' => [
+                    'token' => $token,
+                    'type' => 'bearer',
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors();
+
+            $response = [
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $errors
+            ];
+
+            return response()->json($response, 422);
+        }
     }
 }

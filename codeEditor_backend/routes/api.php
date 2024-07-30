@@ -29,7 +29,6 @@ Route::middleware('auth:api')->group(function () {
         Route::get('users', [UserController::class, 'getAllUsers']);
         Route::get('userCodes', [CodeFilesController::class, 'getUserCodes']);
         Route::post('getCode', [CodeFilesController::class, 'getCodeFileById']);
-        Route::post('getCode', [CodeFilesController::class, 'getCodeFileById']);
         Route::post('createCode', [CodeFilesController::class, 'createCodeFile']);
         Route::patch('updateCode', [CodeFilesController::class, 'updateCode']);
         Route::delete('deleteCode', [CodeFilesController::class, 'deleteCodeFile']);

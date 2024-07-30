@@ -23,10 +23,12 @@ Route::post('create', [AuthUserController::class, 'register']);
 Route::middleware('auth:api')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::delete('user/delete', [UserController::class, 'deleteUser']);
+        Route::post('/upload', [UserController::class, 'uploadUsersCsv']);
     });
     Route::middleware('user')->group(function () {
         Route::get('users', [UserController::class, 'getAllUsers']);
         Route::get('userCodes', [CodeFilesController::class, 'getUserCodes']);
+        Route::post('getCode', [CodeFilesController::class, 'getCodeFileById']);
         Route::patch('updateCode', [CodeFilesController::class, 'updateCode']);
     });
 });

@@ -79,4 +79,39 @@ class CodeFilesController extends Controller
             return response()->json(['error' => 'Could not update code file'], 500);
         }
     }
+    public function getCodeFileById(Request $request)
+    {
+        // Validate the request data
+        $request->validate([
+            'id' => 'required|integer',
+        ]);
+
+        // Get the token from the request headers
+        $token = $request->bearerToken();
+        $id = $request->input('id');
+
+        if (!$token) {
+            return response()->json(['error' => 'Token not provided'], 401);
+        }
+
+        try {
+            // Decode the token to get the user ID
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $userId = $payload['sub']; // Assuming 'sub' is the claim that holds the user ID
+
+            // Retrieve the code file by ID and check if it belongs to the user
+            $codeFile = code_file::where('id', $id)->where('user_id', $userId)->first();
+
+            if (!$codeFile) {
+                return response()->json(['error' => 'Code file not found or unauthorized'], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $codeFile
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Could not fetch code file'], 500);
+        }
+    }
 }
